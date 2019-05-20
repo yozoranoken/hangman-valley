@@ -2,9 +2,10 @@ from enum import Enum, auto
 from random import randint
 
 import pyglet
+from pyglet.gl import *
 
 from game.state import State
-from game.questionitem import SubmitStatus
+from game.questionitem import SubmitStatus, CHANCES
 from game import resources
 
 
@@ -35,13 +36,29 @@ class TileSprite(pyglet.sprite.Sprite):
             img=resources.blank_tile_image, *args, **kwargs)
 
         self.g_symbol_image = resources.symbol_tile[symbol]
-        self.g_uid = uid
+        self._g_uid = uid
 
         if not is_closed:
             self.open()
 
     def open(self):
         self.image = self.g_symbol_image
+
+    @property
+    def g_uid(self):
+        return self._g_uid
+
+
+class WrongSprite(pyglet.sprite.Sprite):
+    def __init__(self, *args, **kwargs):
+        super(WrongSprite, self).__init__(
+            img=resources.wrong_symbol_off, *args, **kwargs)
+
+    def switch_on(self):
+        self.image = resources.wrong_symbol_on
+
+    def switch_off(self):
+        self.image = resources.wrong_symbol_off
 
 
 class MainWindow(pyglet.window.Window):
@@ -55,6 +72,7 @@ class MainWindow(pyglet.window.Window):
 
     class Screen(Enum):
         GAME = auto()
+        LEADERBOARD = auto()
 
     def __init__(self):
         super(MainWindow, self).__init__(1280, 720)
@@ -67,7 +85,9 @@ class MainWindow(pyglet.window.Window):
     def g_card_pt(self):
         return (self.height - self.g_card.height) // 2
 
-    def g_init_symbol_tiles(self, symbol_tiles):
+    def g_init_symbol_tiles(self):
+        self.g_symbol_tiles = {}
+
         n_lines = len(self.g_state.item.symbol_state)
         lines_height = (n_lines * self.TILE_HEIGHT +
                         (n_lines - 1) * self.TILE_SPACING_Y)
@@ -90,30 +110,86 @@ class MainWindow(pyglet.window.Window):
                                          is_closed=s.is_char,
                                          batch=self.g_game_batch)
 
-                symbol_tiles[s.id] = tile_sprite
+                self.g_symbol_tiles[s.id] = tile_sprite
+
+    def g_init_hint(self):
+        self.g_hint = pyglet.text.Label(
+            text=self.g_state.item.hint,
+            font_name='RobotoMono Medium',
+            font_size=16,
+            batch=self.g_game_batch,
+            anchor_x='center',
+            anchor_y='center',
+        )
+        self.g_hint.x = self.g_card_pt + self.g_card.width // 2
+        self.g_hint.y = (self.g_card_pt + self.CARD_CONTENT_HEIGHT +
+                         (self.g_card.height -
+                          self.CARD_CONTENT_HEIGHT) // 2)
+
+    def g_init_wrongs(self):
+        self.g_wrongs = []
+        for i in range(CHANCES):
+            wrong = WrongSprite(
+                x=self.width - self.g_wrongs_card.width,
+                y=((self.height - self.g_wrongs_card.height) // 2 +
+                   i * resources.wrong_symbol_on.height),
+                batch=self.g_game_batch,
+            )
+            self.g_wrongs.append(wrong)
+
+    def g_init_score_text(self):
+        self.g_score_text = pyglet.text.Label(
+            text=str(self.g_state.score),
+            anchor_x='right',
+            anchor_y='top',
+            batch=self.g_game_batch,
+            font_name='RobotoMono Medium',
+            font_size=26,
+        )
+
+        self.g_score_text.x = self.width - 20
+        self.g_score_text.y = self.height - 20
 
     def g_init_game_vars(self):
         self.g_game_batch = pyglet.graphics.Batch()
         self.g_bg = resources.bg_image
         self.g_card = resources.card_image
+        self.g_wrongs_card = resources.wrongs_card
 
         self.g_state = State()
         self.g_state.reset()
+
         self.g_state.load_new_item()
+        self.g_init_symbol_tiles()
+        self.g_init_hint()
+        self.g_init_wrongs()
+        self.g_init_score_text()
 
-        self.g_symbol_tiles = {}
-        self.g_init_symbol_tiles(self.g_symbol_tiles)
-
-    def draw_game_screen(self):
+    def g_draw_game_screen(self):
         self.g_bg.blit(0, 0)
+
+        # Blending PNG transparency
+        # https://stackoverflow.com/a/46048254
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         self.g_card.blit(self.g_card_pt, self.g_card_pt)
+
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        self.g_wrongs_card.blit(
+            self.width - self.g_wrongs_card.width,
+            (self.height - self.g_wrongs_card.height) // 2,
+        )
+
         self.g_game_batch.draw()
 
     def on_draw(self):
         self.clear()
 
+        # Blending PNG transparency
+        # https://stackoverflow.com/a/46048254
+        glEnable(GL_BLEND)
+
         if self.g_screen == self.Screen.GAME:
-            self.draw_game_screen()
+            self.g_draw_game_screen()
 
 
 if __name__ == '__main__':

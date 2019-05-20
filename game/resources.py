@@ -57,3 +57,7 @@ for symbol, name in SYMBOL_TO_NAME.items():
     symbol_tile[symbol] = pyglet.resource.image(f'{name}.png')
 
 blank_tile_image = pyglet.resource.image('BLANK.png')
+
+wrong_symbol_on = pyglet.resource.image('wrong_sym_on.png')
+wrong_symbol_off = pyglet.resource.image('wrong_sym_off.png')
+wrongs_card = pyglet.resource.image('wrongs_card.png')

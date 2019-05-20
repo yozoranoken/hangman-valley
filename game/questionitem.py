@@ -9,8 +9,10 @@ class SubmitStatus(Enum):
     REPEAT = 3
 
 
+CHANCES = 4
+
+
 class QuestionItem:
-    CHANCES = 3
     Symbol = namedtuple('Symbol', ('id', 'symbol', 'status', 'is_char'))
 
     def __init__(self, hint, lines):
@@ -84,7 +86,7 @@ class QuestionItem:
 
     @property
     def is_failed(self):
-        return self._wrongs > self.CHANCES
+        return self._wrongs > CHANCES
 
     @property
     def is_finished(self):
@@ -109,7 +111,7 @@ class QuestionItem:
         print('Wrongs: [', end='')
 
         wrongs = self._wrongs
-        for _ in range(self.CHANCES):
+        for _ in range(CHANCES):
             if wrongs > 0:
                 print('X', end='')
                 wrongs -= 1
