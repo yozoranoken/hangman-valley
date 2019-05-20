@@ -3,6 +3,7 @@ from pyglet.gl import glBlendFunc, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA
 
 from .. import resources
 from ..questionitem import CHANCES, symbol_range, SubmitStatus
+from ..state import Screen
 
 
 class TileSprite(pyglet.sprite.Sprite):
@@ -200,8 +201,7 @@ class GameView:
         if self.state.gameover:
             if symbol == pyglet.window.key.ENTER:
                 self.close_notification()
-                self.reset()
-                # pyglet.app.exit()
+                self.state.router.push(Screen.SCORE)
             else:
                 return
 
@@ -246,3 +246,6 @@ class GameView:
             resources.hangman_image[wrongs - 1].blit(673, 95)
 
         self.game_batch.draw()
+
+    def before_route_enter(self, *args, **kwargs):
+        pass

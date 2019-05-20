@@ -1,1 +1,1 @@
-from . import gameview
+from . import gameview, scoreview

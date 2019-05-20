@@ -66,3 +66,6 @@ wrongs_card = pyglet.resource.image('wrongs_card.png')
 hangman_image = [
     pyglet.resource.image(f'hangman_{i}.png') for i in range(1, 6)
 ]
+
+score_bg = pyglet.resource.image('score_bg.png')
+leaderboard_bg = pyglet.resource.image('leaderboard_bg.png')
