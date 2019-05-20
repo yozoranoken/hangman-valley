@@ -11,7 +11,7 @@ class SubmitStatus(Enum):
 
 class QuestionItem:
     CHANCES = 3
-    Symbol = namedtuple('Symbol', ('symbol', 'status', 'is_char'))
+    Symbol = namedtuple('Symbol', ('id', 'symbol', 'status', 'is_char'))
 
     def __init__(self, hint, lines):
         self._hint = hint
@@ -21,8 +21,8 @@ class QuestionItem:
 
         self._initialize_keys()
 
-    @property
-    def _symbol_range(self):
+    @staticmethod
+    def symbol_range():
         return chain(range(48, 58), range(65, 91))
 
     def _initialize_keys(self):
@@ -30,7 +30,7 @@ class QuestionItem:
         line_str = line_str.replace(' ', '')
         line_str = line_str.upper()
 
-        for i in self._symbol_range:
+        for i in self.symbol_range():
             c = chr(i)
             if c not in line_str or c in self._symbols.keys():
                 continue
@@ -47,6 +47,7 @@ class QuestionItem:
     @property
     def symbol_state(self):
         lines = []
+        id = 0
         for line in self._lines:
             visibles = []
             for c in line:
@@ -54,15 +55,32 @@ class QuestionItem:
 
                 is_char = True
                 status = True
-                if c.isspace() or ord(c) not in self._symbol_range:
+                if c.isspace() or ord(c) not in self.symbol_range():
                     is_char = False
                 else:
                     status = self._symbols[c]
 
-                visibles.append(self.Symbol(symbol=c, status=status,
+                visibles.append(self.Symbol(id=id, symbol=c, status=status,
                                             is_char=is_char))
+                id += 1
             lines.append(visibles)
         return lines
+
+    def get_line(self, index):
+        s = ''
+        for sym in self.symbol_state[index]:
+            if sym.is_char:
+                if sym.status:
+                    s += sym.symbol
+                else:
+                    s += '•'
+            else:
+                s += sym.symbol
+        return s
+
+    @property
+    def line_count(self):
+        return len(self.symbol_state)
 
     @property
     def is_failed(self):
