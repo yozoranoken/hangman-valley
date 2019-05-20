@@ -12,6 +12,10 @@ class SubmitStatus(Enum):
 CHANCES = 4
 
 
+def symbol_range():
+    return chain(range(48, 58), range(65, 91))
+
+
 class QuestionItem:
     Symbol = namedtuple('Symbol', ('id', 'symbol', 'status', 'is_char'))
 
@@ -23,16 +27,12 @@ class QuestionItem:
 
         self._initialize_keys()
 
-    @staticmethod
-    def symbol_range():
-        return chain(range(48, 58), range(65, 91))
-
     def _initialize_keys(self):
         line_str = ''.join(self._lines)
         line_str = line_str.replace(' ', '')
         line_str = line_str.upper()
 
-        for i in self.symbol_range():
+        for i in symbol_range():
             c = chr(i)
             if c not in line_str or c in self._symbols.keys():
                 continue
@@ -57,7 +57,7 @@ class QuestionItem:
 
                 is_char = True
                 status = True
-                if c.isspace() or ord(c) not in self.symbol_range():
+                if c.isspace() or ord(c) not in symbol_range():
                     is_char = False
                 else:
                     status = self._symbols[c]

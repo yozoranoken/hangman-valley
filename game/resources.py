@@ -1,6 +1,6 @@
 import pyglet
 from itertools import chain
-from .questionitem import QuestionItem
+from .questionitem import symbol_range
 
 pyglet.resource.path = ['resources']
 pyglet.resource.add_font('Roboto-Medium.ttf')
@@ -12,7 +12,7 @@ card_image = pyglet.resource.image('card.png')
 
 symbol_tile = {}
 
-for i in QuestionItem.symbol_range():
+for i in symbol_range():
     c = chr(i)
     symbol_tile[c] = pyglet.resource.image(f'{c}.png')
 
@@ -61,3 +61,8 @@ blank_tile_image = pyglet.resource.image('BLANK.png')
 wrong_symbol_on = pyglet.resource.image('wrong_sym_on.png')
 wrong_symbol_off = pyglet.resource.image('wrong_sym_off.png')
 wrongs_card = pyglet.resource.image('wrongs_card.png')
+
+# Edited from https://image.shutterstock.com/image-vector/editable-vector-silhouette-man-hanged-260nw-39801637.jpg
+hangman_image = [
+    pyglet.resource.image(f'hangman_{i}.png') for i in range(1, 6)
+]
